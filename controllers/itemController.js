@@ -1,4 +1,6 @@
 const Item = require('../models/item')
+const path = require('path')
+const fs = require('fs')
 
 const itemController = {
 	// Добавление нового товара
@@ -65,11 +67,24 @@ const itemController = {
 	// Удаление товара по id
 	deleteItem: async (req, res) => {
 		try {
-			const item = await Item.findByIdAndDelete(req.params.id)
+			const item = await Item.findById(req.params.id)
+
 			if (!item) return res.status(404).json({ message: 'Item not found' })
+
+			// Путь к файлу изображения
+			const imagePath = path.join(__dirname, '..', item.photo)
+
+			// Удаляем файл изображения, если он существует
+			if (fs.existsSync(imagePath)) {
+				fs.unlinkSync(imagePath)
+			}
+
+			// Теперь удаляем сам товар из базы данных
+			await Item.findByIdAndDelete(req.params.id)
 
 			res.status(200).json({ message: 'Item deleted successfully' })
 		} catch (error) {
+			console.error('Error in deleteItem:', error)
 			res.status(500).json({ message: error.message })
 		}
 	},

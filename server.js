@@ -7,6 +7,7 @@ const morgan = require('morgan')
 const userRoutes = require('./routes/userRoutes')
 const itemRoutes = require('./routes/itemRoutes')
 const listRoutes = require('./routes/listRoutes')
+const { upload, uploadRoute } = require('./controllers/uploadController')
 const multer = require('multer')
 const fs = require('fs')
 const path = require('path')
@@ -32,37 +33,8 @@ app.use(limiter)
 app.use('/api/users', userRoutes)
 app.use('/api/item', itemRoutes)
 app.use('/api/list', listRoutes)
-
-// Путь к папке 'uploads'
-const uploadsDir = path.join(__dirname, 'uploads')
-
-// Проверяем, существует ли директория
-if (!fs.existsSync(uploadsDir)) {
-	// Если директории не существует, создаем ее
-	fs.mkdirSync(uploadsDir, { recursive: true })
-}
-
-// Настройка хранения для Multer
-const storage = multer.diskStorage({
-	destination: function (req, file, cb) {
-		cb(null, 'uploads/') // Указываем папку для сохранения изображений
-	},
-	filename: function (req, file, cb) {
-		// Очищаем имя файла от нежелательных символов
-		const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]+/g, '-')
-		// Генерируем уникальное имя файла
-		cb(null, Date.now() + '-' + cleanName)
-	},
-})
-
-const upload = multer({ storage: storage })
-
-// Маршрут для загрузки изображения товара
-app.post('/api/items/upload', upload.single('photo'), (req, res) => {
-	// Файл сохранен в 'uploads/' с уникальным именем файла
-	// Возвращаем URL файла клиенту
-	res.json({ photoUrl: `/uploads/${req.file.filename}` })
-})
+// Маршрут для загрузки изображения товара, используя функцию из uploadController
+app.post('/api/items/upload', upload.single('photo'), uploadRoute)
 
 // Предоставление статического доступа к папке 'uploads'
 app.use(
