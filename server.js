@@ -7,6 +7,7 @@ const morgan = require('morgan')
 const userRoutes = require('./routes/userRoutes')
 const itemRoutes = require('./routes/itemRoutes')
 const listRoutes = require('./routes/listRoutes')
+const chatBotRoutes = require('./routes/chatBotRoutes')
 const { upload, uploadRoute } = require('./controllers/uploadController')
 const multer = require('multer')
 const fs = require('fs')
@@ -33,8 +34,21 @@ app.use(limiter)
 app.use('/api/users', userRoutes)
 app.use('/api/item', itemRoutes)
 app.use('/api/list', listRoutes)
+
+// chatbot
+app.use('/api/chatbot', chatBotRoutes)
+
 // Маршрут для загрузки изображения товара, используя функцию из uploadController
 app.post('/api/items/upload', upload.single('photo'), uploadRoute)
+
+// Путь к папке 'uploads'
+const uploadsDir = path.join(__dirname, 'uploads')
+
+// Проверяем, существует ли директория
+if (!fs.existsSync(uploadsDir)) {
+	// Если директории не существует, создаем ее
+	fs.mkdirSync(uploadsDir, { recursive: true })
+}
 
 // Предоставление статического доступа к папке 'uploads'
 app.use(

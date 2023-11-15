@@ -2,15 +2,6 @@ const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
 
-// Путь к папке 'uploads'
-const uploadsDir = path.join(__dirname, 'uploads')
-
-// Проверяем, существует ли директория
-if (!fs.existsSync(uploadsDir)) {
-	// Если директории не существует, создаем ее
-	fs.mkdirSync(uploadsDir, { recursive: true })
-}
-
 // Настройка хранения для Multer
 const storage = multer.diskStorage({
 	destination: function (req, file, cb) {
