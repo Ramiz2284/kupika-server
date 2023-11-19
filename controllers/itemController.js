@@ -49,18 +49,33 @@ const itemController = {
 	// Обновление товара по id
 	updateItem: async (req, res) => {
 		try {
-			const { name, quantity, price, photo } = req.body
-			const updatedItem = await Item.findByIdAndUpdate(
-				req.params.id,
-				{ name, quantity, price, photo },
-				{ new: true }
-			)
-			if (!updatedItem)
-				return res.status(404).json({ message: 'Item not found' })
+			const itemId = req.params.id
+			const item = await Item.findById(itemId)
+			if (!item) return res.status(404).json({ message: 'Item not found' })
 
-			res.status(200).json(updatedItem)
+			// Путь к файлу изображения
+			const imagePath = path.join(__dirname, '..', item.photo)
+			console.log(imagePath)
+
+			// Удаляем файл изображения, если он существует
+			if (fs.existsSync(imagePath)) {
+				fs.unlinkSync(imagePath)
+			}
+
+			const updateData = req.body
+
+			// Обновление элемента в базе данных
+			const updatedItem = await Item.findByIdAndUpdate(itemId, updateData, {
+				new: true,
+			})
+
+			if (!updatedItem) {
+				return res.status(404).send({ message: 'Item not found' })
+			}
+
+			res.send(updatedItem)
 		} catch (error) {
-			res.status(400).json({ message: error.message })
+			res.status(500).send({ message: 'Error updating item' })
 		}
 	},
 

@@ -1,25 +1,30 @@
 const multer = require('multer')
+const sharp = require('sharp')
 const path = require('path')
 const fs = require('fs')
 
-// Настройка хранения для Multer
-const storage = multer.diskStorage({
-	destination: function (req, file, cb) {
-		cb(null, 'uploads/') // Указываем папку для сохранения изображений
-	},
-	filename: function (req, file, cb) {
-		// Очищаем имя файла от нежелательных символов
-		const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]+/g, '-')
-		// Генерируем уникальное имя файла
-		cb(null, Date.now() + '-' + cleanName)
-	},
-})
+const storage = multer.memoryStorage() // Измените хранение на memoryStorage
 
 const upload = multer({ storage: storage })
 
-// Маршрут для загрузки изображения товара
-const uploadRoute = (req, res) => {
-	res.json({ photoUrl: `/uploads/${req.file.filename}` })
+const uploadRoute = async (req, res) => {
+	try {
+		// Доступ к файлу через req.file.buffer
+		const buffer = await sharp(req.file.buffer)
+			.toFormat('jpeg') // Конвертировать в jpeg
+			.jpeg({ quality: 60 }) // Установите качество сжатого изображения
+			.toBuffer()
+
+		// Сохранение обработанного изображения на диск
+		const cleanName = req.file.originalname.replace(/[^a-zA-Z0-9.]+/g, '-')
+		const filename = Date.now() + '-' + cleanName
+		const filepath = path.join('uploads/', filename)
+		fs.writeFileSync(filepath, buffer)
+
+		res.json({ photoUrl: `/uploads/${filename}` })
+	} catch (error) {
+		res.status(500).json({ message: 'Error processing image', error })
+	}
 }
 
 module.exports = {

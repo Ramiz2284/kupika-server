@@ -65,3 +65,27 @@ exports.deleteListById = async (req, res) => {
 		res.status(500).send({ message: 'Ошибка при удалении списка' })
 	}
 }
+
+exports.updateList = async (req, res) => {
+	try {
+		const listId = req.params.id // Используйте listId вместо itemId для ясности
+		const updateData = req.body // Данные для обновления должны приходить в теле запроса
+
+		// Обновление списка в базе данных
+		const updatedList = await List.findByIdAndUpdate(
+			listId,
+			{ $set: updateData },
+			{ new: true }
+		).populate('itemIds') // Если вам нужно вернуть список с популированными itemIds
+
+		if (!updatedList) {
+			return res.status(404).send({ message: 'List not found' })
+		}
+
+		res.status(200).json(updatedList) // Используйте json для ответа, это стандарт
+	} catch (error) {
+		res
+			.status(500)
+			.send({ message: 'Error updating list', error: error.message })
+	}
+}

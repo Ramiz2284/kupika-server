@@ -17,4 +17,6 @@ router.get('/id/:id', listController.getListById)
 // Удаление списка по ID
 router.delete('/:id', listController.deleteListById)
 
+router.put('/update/:id', listController.updateList)
+
 module.exports = router

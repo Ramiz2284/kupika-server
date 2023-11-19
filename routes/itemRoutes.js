@@ -9,3 +9,4 @@ router.post('/newitem', upload.single('photo'), itemController.createItem)
 
 router.delete('/:id', itemController.deleteItem)
 module.exports = router
+router.put('/update/:id', itemController.updateItem)
