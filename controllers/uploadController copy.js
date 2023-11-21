@@ -1,7 +1,7 @@
 const multer = require('multer')
 const sharp = require('sharp')
 const path = require('path')
-const fs = require('fs').promises // Измените на использование промисов
+const fs = require('fs')
 
 const storage = multer.memoryStorage() // Измените хранение на memoryStorage
 
@@ -19,13 +19,10 @@ const uploadRoute = async (req, res) => {
 		const cleanName = req.file.originalname.replace(/[^a-zA-Z0-9.]+/g, '-')
 		const filename = Date.now() + '-' + cleanName
 		const filepath = path.join('uploads/', filename)
-
-		// Асинхронная запись файла на диск
-		await fs.writeFile(filepath, buffer)
+		fs.writeFileSync(filepath, buffer)
 
 		res.json({ photoUrl: `/uploads/${filename}` })
 	} catch (error) {
-		console.error('Error processing image', error) // Добавьте логирование ошибки
 		res.status(500).json({ message: 'Error processing image', error })
 	}
 }
